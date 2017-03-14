@@ -64,14 +64,14 @@ class UserVideoViewingTask(EventLogSelectionMixin, MapReduceJobTask):
     def mapper(self, line):
         # Add a filter here to permit quicker rejection of unrelated events.
         if VIDEO_EVENT_MINIMUM_STRING not in line:
-            self.incr_counter(self.counter_category_name, 'Discard Missing Video String', 1)
+            # self.incr_counter(self.counter_category_name, 'Discard Missing Video String', 1)
             return
 
         value = self.get_event_and_date_string(line)
         if value is None:
             return
         event, _date_string = value
-        self.incr_counter(self.counter_category_name, 'Inputs with Dates', 1)
+        # self.incr_counter(self.counter_category_name, 'Inputs with Dates', 1)
 
         event_type = event.get('event_type')
         if event_type is None:
@@ -80,10 +80,10 @@ class UserVideoViewingTask(EventLogSelectionMixin, MapReduceJobTask):
             return
 
         if event_type not in VIDEO_EVENT_TYPES:
-            self.incr_counter(self.counter_category_name, 'Discard Non-Video Event Type', 1)
+            # self.incr_counter(self.counter_category_name, 'Discard Non-Video Event Type', 1)
             return
 
-        self.incr_counter(self.counter_category_name, 'Input Video Events', 1)
+        # self.incr_counter(self.counter_category_name, 'Input Video Events', 1)
 
         # This has already been checked when getting the event, so just fetch the value.
         timestamp = eventlog.get_event_time_string(event)
@@ -117,7 +117,7 @@ class UserVideoViewingTask(EventLogSelectionMixin, MapReduceJobTask):
             self.incr_counter(self.counter_category_name, 'Discard Video Missing encoded_module_id', 1)
             return
 
-        self.incr_counter(self.counter_category_name, 'Video Events Before Time Check', 1)
+        # self.incr_counter(self.counter_category_name, 'Video Events Before Time Check', 1)
 
         current_time = None
         old_time = None
@@ -164,7 +164,7 @@ class UserVideoViewingTask(EventLogSelectionMixin, MapReduceJobTask):
         if youtube_id is not None:
             youtube_id = youtube_id.encode('utf8')
 
-        self.incr_counter(self.counter_category_name, 'Output Video Events from Mapper', 1)
+        # self.incr_counter(self.counter_category_name, 'Output Video Events from Mapper', 1)
         yield (
             (username.encode('utf8'), course_id.encode('utf8'), encoded_module_id.encode('utf8')),
             (timestamp, event_type, current_time, old_time, youtube_id)
@@ -216,7 +216,7 @@ class UserVideoViewingTask(EventLogSelectionMixin, MapReduceJobTask):
         play_video/non-play_video events.
         """
         username, course_id, encoded_module_id = key
-        self.incr_counter(self.counter_category_name, 'Input User_course_videos', 1)
+        # self.incr_counter(self.counter_category_name, 'Input User_course_videos', 1)
 
         sorted_events = sorted(events)
 
@@ -229,7 +229,7 @@ class UserVideoViewingTask(EventLogSelectionMixin, MapReduceJobTask):
         last_viewing_end_event = None
         viewing = None
         for event in sorted_events:
-            self.incr_counter(self.counter_category_name, 'Input User_course_video events', 1)
+            # self.incr_counter(self.counter_category_name, 'Input User_course_video events', 1)
 
             timestamp, event_type, current_time, old_time, youtube_id = event
             parsed_timestamp = ciso8601.parse_datetime(timestamp)
@@ -240,10 +240,10 @@ class UserVideoViewingTask(EventLogSelectionMixin, MapReduceJobTask):
 
             def start_viewing():
                 """Returns a 'viewing' object representing the point where a video began to be played."""
-                self.incr_counter(self.counter_category_name, 'Viewing Start', 1)
+                # self.incr_counter(self.counter_category_name, 'Viewing Start', 1)
                 video_duration = VIDEO_UNKNOWN_DURATION
                 if youtube_id:
-                    self.incr_counter(self.counter_category_name, 'Viewing Start with Video Id', 1)
+                    # self.incr_counter(self.counter_category_name, 'Viewing Start with Video Id', 1)
                     video_duration = self.video_durations.get(youtube_id)
                     if not video_duration:
                         video_duration = self.get_video_duration(youtube_id)
